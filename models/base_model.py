@@ -13,7 +13,7 @@ class BaseModel:
     This class defines all common attributes/methods for other classes
     """
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         """
         Initializes object with public instance attributes:
 
@@ -23,9 +23,16 @@ class BaseModel:
          - created_at: datetime - assigns with the current datetime when
          an instance is created
         """
-        self.id = str(uuid4())
-        self.created_at = datetime.now()
-        self.save()
+        if not kwargs:
+            self.id = str(uuid4())
+            self.created_at = datetime.now()
+            self.save()
+        else:
+            for k, v in kwargs.items():
+                if k != "__class__":
+                    setattr(self, k, v)
+            self.created_at = datetime.fromisoformat(self.created_at)
+            self.updated_at = datetime.fromisoformat(self.updated_at)
 
     def save(self):
         """
