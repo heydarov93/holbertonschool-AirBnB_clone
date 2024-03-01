@@ -57,9 +57,20 @@ class HBNBCommand(cmd.Cmd):
             else:
                 print(objs[key])
 
-    @staticmethod
-    def check_args(classname, id):
-        pass
+    def check_args(self, args):
+        clargs = args.split()
+        length = len(clargs)
+        classname = self.__base_classname
+
+        if length == 0:
+            print("** class name missing **")
+        elif clargs[0] != classname:
+            print("** class doesn't exist **")
+        elif length == 1:
+            print("** instance id missing **")
+        else:
+            key = f"{self.__base_classname}.{clargs[1]}"
+            objs = storage.all()
 
     def do_quit(self, args):
         """
