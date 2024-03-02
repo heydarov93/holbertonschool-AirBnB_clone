@@ -17,7 +17,7 @@ class HBNBCommand(cmd.Cmd):
     """
     prompt = '(hbnb) '
     __storage_filename = "file.json"
-    __classname = "BaseModel"
+    __classnames = ("BaseModel",)
 
     def do_create(self, args):
         """
@@ -41,13 +41,9 @@ class HBNBCommand(cmd.Cmd):
         check_isok = self.check_args("show", args)
 
         if check_isok:
-            key = f"{self.__classname}.{clargs[1]}"
+            key = f"{clargs[0]}.{clargs[1]}"
             objs = storage.all()
-
-            if not objs or not objs.get(key):
-                print("** no instance found **")
-            else:
-                print(objs[key])
+            print(objs[key])
 
     def do_destroy(self, args):
         """
@@ -60,7 +56,7 @@ class HBNBCommand(cmd.Cmd):
         if check_isok:
             clargs = args.split()
             objs = storage.all()
-            key = f"{self.__classname}.{clargs[1]}"
+            key = f"{clargs[0]}.{clargs[1]}"
             del objs[key]
             storage.save()
 
@@ -98,6 +94,26 @@ class HBNBCommand(cmd.Cmd):
 
             print(objs_str_list)
 
+    def do_update(self, args):
+        """
+        Updates an instance based on the class name and id by adding
+        or updating attribute (save the change into the JSON file).
+        Ex: $ update BaseModel 1234-1234-1234 email "aibnb@mail.com"
+
+        Usage:
+        - update <class name> <id> <attribute name> "<attribute value>"
+        """
+
+        check_isok = self.check_args("update", args)
+        if check_isok:
+            clargs = args.split()
+            objs = storage.all()
+            key = clargs[0] + "." + clargs[1]
+
+            instance = objs[key]
+            setattr(instance, clargs[2], clargs[3])
+            instance.save()
+
     def do_quit(self, args):
         """
         Quit command to exit the program
@@ -113,28 +129,59 @@ class HBNBCommand(cmd.Cmd):
     def check_args(self, op_name, args):
         """
         Checks arguments based on operation name
+
         Returns True if all checks passed
+
         Otherwise returns False
+
+        For op_name = "create" valid args are:
+        - <class name>
+
+        For op_name = "all" valid args are:
+        - ""
+        - <class name>
+
+        For op_name = "show" valid args are:
+        - <class name> <id>
+
+        For op_name = "update" valid args are:
+        - <class name> <id> <attribute name> "<attribute value>"
+
         """
         clargs = args.split()
         length = len(clargs)
-        classname = self.__classname
+        classnames = self.__classnames
 
         if length == 0:
             if op_name != "all":
                 print("** class name missing **")
             else:
                 return True
-        elif clargs[0] != classname:
+        elif not clargs[0] in classnames:
             print("** class doesn't exist **")
         elif op_name in ("create", "all"):
             return True
         elif length == 1:
             print("** instance id missing **")
         else:
-            return True
+            key = f"{clargs[0]}.{clargs[1]}"
+            objs = storage.all()
+
+            if not objs or not objs.get(key):
+                print("** no instance found **")
+            elif op_name in ("show", "destroy"):
+                return True
+            elif not length > 2:
+                print("** attribute name missing **")
+            elif not length > 3:
+                print("** value missing **")
+            else:
+                return True
 
         return False
+
+    def do_test(self, args):
+        print(args)
 
     def emptyline(self):
         pass
