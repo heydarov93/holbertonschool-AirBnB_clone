@@ -17,7 +17,8 @@ class HBNBCommand(cmd.Cmd):
     """
     prompt = '(hbnb) '
     __storage_filename = "file.json"
-    __classnames = ("BaseModel", "User")
+    __classnames = ("BaseModel", "User", "Place", "State",
+                    "City", "Amenity", "Review")
 
     def do_create(self, args):
         """
