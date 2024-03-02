@@ -111,7 +111,12 @@ class HBNBCommand(cmd.Cmd):
             key = clargs[0] + "." + clargs[1]
 
             instance = objs[key]
-            setattr(instance, clargs[2], clargs[3])
+            """
+            remove the double quotes from the beginning and
+            the end of the att value
+            """
+            value = clargs[3].replace("\"", "")
+            setattr(instance, clargs[2], value)
             instance.save()
 
     def do_quit(self, args):
