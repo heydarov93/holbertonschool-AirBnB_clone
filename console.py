@@ -17,18 +17,15 @@ class HBNBCommand(cmd.Cmd):
     """
     prompt = '(hbnb) '
     __storage_filename = "file.json"
-    __base_classname = "BaseModel"
+    __classname = "BaseModel"
 
     def do_create(self, args):
         """
         Creates a new instance of BaseModel,
         saves it (to the JSON file) and prints the id
         """
-        if args == "":
-            print("** class name missing **")
-        elif args != self.__base_classname:
-            print("** class doesn't exist **")
-        else:
+        check_isok = self.check_args("create", args)
+        if check_isok:
             instance = eval(f"{args}()")
             instance.save()
             print(instance.id)
@@ -41,15 +38,10 @@ class HBNBCommand(cmd.Cmd):
         clargs = args.split()
         length = len(clargs)
 
-        if length == 0:
-            print("** class name missing **")
-        elif clargs[0] != self.__base_classname:
-            print("** class doesn't exist **")
-        elif length == 1:
-            print("** instance id missing **")
-        else:
-            classname = self.__base_classname
-            key = f"{self.__base_classname}.{clargs[1]}"
+        check_isok = self.check_args("show", args)
+
+        if check_isok:
+            key = f"{self.__classname}.{clargs[1]}"
             objs = storage.all()
 
             if not objs or not objs.get(key):
@@ -57,20 +49,54 @@ class HBNBCommand(cmd.Cmd):
             else:
                 print(objs[key])
 
-    def check_args(self, args):
-        clargs = args.split()
-        length = len(clargs)
-        classname = self.__base_classname
+    def do_destroy(self, args):
+        """
+        Deletes an instance based on the class name and id
+        (save the change into the JSON file).
+        Ex: $ destroy BaseModel 1234-1234-1234
+        """
+        check_isok = self.check_args("destroy", args)
 
-        if length == 0:
-            print("** class name missing **")
-        elif clargs[0] != classname:
-            print("** class doesn't exist **")
-        elif length == 1:
-            print("** instance id missing **")
-        else:
-            key = f"{self.__base_classname}.{clargs[1]}"
+        if check_isok:
+            clargs = args.split()
             objs = storage.all()
+            key = f"{self.__classname}.{clargs[1]}"
+            del objs[key]
+            storage.save()
+
+    def do_all(self, args):
+        """
+        Prints all string representation of all instances based
+        or not on the class name. Ex: $ all BaseModel or $ all
+
+        If the class name doesn’t exist:
+        print ** class doesn't exist ** (ex: $ all MyModel)
+        """
+        check_isok = self.check_args("all", args)
+
+        if check_isok:
+            clargs = args.split()
+            objs = storage.all()
+
+            if len(clargs):
+                classname = clargs[0]
+
+                def isin_key(classname, key):
+                    """
+                    checks if classname from args is in key
+                    returns True if is in
+                    otherwise False
+                    """
+                    if classname in key.split("."):
+                        return True
+                    return False
+
+                objs_str_list = [str(obj) for k, obj in objs.items()
+                                 if isin_key(classname, k)]
+            else:
+                objs_str_list = [str(obj) for obj in objs.values()]
+
+            print(objs_str_list)
 
     def do_quit(self, args):
         """
@@ -84,22 +110,34 @@ class HBNBCommand(cmd.Cmd):
         """
         return True
 
+    def check_args(self, op_name, args):
+        """
+        Checks arguments based on operation name
+        Returns True if all checks passed
+        Otherwise returns False
+        """
+        clargs = args.split()
+        length = len(clargs)
+        classname = self.__classname
+
+        if length == 0:
+            if op_name != "all":
+                print("** class name missing **")
+            else:
+                return True
+        elif clargs[0] != classname:
+            print("** class doesn't exist **")
+        elif op_name in ("create", "all"):
+            return True
+        elif length == 1:
+            print("** instance id missing **")
+        else:
+            return True
+
+        return False
+
     def emptyline(self):
         pass
-
-    """
-    def __reload_instances(self):
-        
-        Reloads objects from file and returns dictionary
-        
-        filename = self.__storage_filename
-        try:
-            with open(filename, "r", encoding="utf-8") as afile:
-                objs = load(afile)
-                return objs
-        except FileNotFoundError:
-            return False
-    """
 
 
 if __name__ == '__main__':
