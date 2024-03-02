@@ -4,6 +4,8 @@ This is a 'file_storage' module and contains FileStorage class
 """
 
 from json import dump, load
+from models.base_model import BaseModel
+from models.user import User
 
 
 class FileStorage:
@@ -45,13 +47,14 @@ class FileStorage:
         file (__file_path) exists ; otherwise, does nothing. If the file
         doesn’t exist, no exception raised)
         """
-        from models.base_model import BaseModel
+
         filename = self.__class__.__file_path
         try:
             with open(filename, "r", encoding="utf-8") as afile:
                 objs_dicts = load(afile)
             objects = self.__class__.__objects
             for k, v in objs_dicts.items():
-                objects[k] = BaseModel(**v)
+                stmt = "{}(**{})".format(v["__class__"], v)
+                objects[k] = eval(stmt)
         except FileNotFoundError:
             pass
