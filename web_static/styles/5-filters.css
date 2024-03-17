@@ -31,7 +31,9 @@
 .amenities {
   height: 100%;
   width: 25%;
-  padding-left: 32px;
+
+  box-sizing: border-box;
+  padding-left: 48px;
 }
 
 .filters div:first-child {
